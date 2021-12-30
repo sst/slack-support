@@ -38,8 +38,12 @@ export async function subscription(event) {
 }
 
 export async function interactive(event) {
+  console.log("event", event);
   const buf = Buffer.from(event.body, 'base64').toString();
-  const payload = JSON.parse(decodeURIComponent(qs.parse(buf)).payload);
+  console.log("buf", buf);
+  console.log("decoded", decodeURIComponent(buf));
+  console.log("parsed", decodeURIComponent(buf).substring(8));
+  const payload = JSON.parse(decodeURIComponent(buf).substring(8));
   console.log("payload", payload);
 
   if (payload.actions[0].value === "refresh") {
