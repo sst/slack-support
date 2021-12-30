@@ -1,0 +1,43 @@
+{
+  token: 'xQYIHKqvseVjxOTCBsfDzHlC',
+  team_id: 'T01JJ7B6URX',
+  api_app_id: 'A02S3B3KSJH',
+  event: {
+    client_msg_id: '6f1edc0e-0368-4772-a1bf-1a638fbc098f',
+    type: 'message',
+    text: 'hello',
+    user: 'U01JVDKASAC',
+    ts: '1640763518.000600',
+    team: 'T01JJ7B6URX',
+    blocks: [
+      {
+        type: 'rich_text',
+        block_id: 'rP0ae',
+        elements: [
+          {
+            type: 'rich_text_section',
+            elements: [{ type: 'text', text: 'hello' }]
+          }
+        ]
+      }
+    ],
+    channel: 'C02RRTC2E9M',
+    event_ts: '1640763518.000600',
+    channel_type: 'channel'
+  },
+  type: 'event_callback',
+  event_id: 'Ev02SK5NM3L1',
+  event_time: 1640763518,
+  authorizations: [
+    {
+      enterprise_id: null,
+      team_id: 'T01JJ7B6URX',
+      user_id: 'U02S6FTD7JP',
+      is_bot: true,
+      is_enterprise_install: false
+    }
+  ],
+  is_ext_shared_channel: false,
+  event_context: '4-eyJldCI6Im1lc3NhZ2UiLCJ0aWQiOiJUMDFKSjdCNlVSWCIsImFpZCI6IkEwMlMzQjNLU0pIIiwiY2lkIjoiQzAyUlJUQzJFOU0ifQ'
+}
+

@@ -1,0 +1,46 @@
+{
+  token: 'xQYIHKqvseVjxOTCBsfDzHlC',
+  team_id: 'T01JJ7B6URX',
+  api_app_id: 'A02S3B3KSJH',
+  event: {
+    type: 'app_home_opened',
+    user: 'U01JVDKASAC',
+    channel: 'D02S6GARXAP',
+    tab: 'home',
+    view: {
+      id: 'V02S3UK5KAR',
+      team_id: 'T01JJ7B6URX',
+      type: 'home',
+      blocks: [Array],
+      private_metadata: '',
+      callback_id: '',
+      state: [Object],
+      hash: '1640772430.BRxHi9Id',
+      title: [Object],
+      clear_on_close: false,
+      notify_on_close: false,
+      close: null,
+      submit: null,
+      previous_view_id: null,
+      root_view_id: 'V02S3UK5KAR',
+      app_id: 'A02S3B3KSJH',
+      external_id: '',
+      app_installed_team_id: 'T01JJ7B6URX',
+      bot_id: 'B02SK4FJS7K'
+    },
+    event_ts: '1640801699.312530'
+  },
+  type: 'event_callback',
+  event_id: 'Ev02S58V4R1T',
+  event_time: 1640801699,
+  authorizations: [
+    {
+      enterprise_id: null,
+      team_id: 'T01JJ7B6URX',
+      user_id: 'U02S6FTD7JP',
+      is_bot: true,
+      is_enterprise_install: false
+    }
+  ],
+  is_ext_shared_channel: false
+}

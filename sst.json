@@ -1,0 +1,5 @@
+{
+  "name": "serverless-stack-slack-support",
+  "region": "us-east-1",
+  "main": "stacks/index.js"
+}

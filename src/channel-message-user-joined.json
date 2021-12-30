@@ -1,0 +1,30 @@
+{
+  token: 'xQYIHKqvseVjxOTCBsfDzHlC',
+  team_id: 'T01JJ7B6URX',
+  api_app_id: 'A02S3B3KSJH',
+  event: {
+    type: 'message',
+    subtype: 'channel_join',
+    ts: '1640763496.000400',
+    user: 'U02S6FTD7JP',
+    text: '<@U02S6FTD7JP> has joined the channel',
+    inviter: 'U01JVDKASAC',
+    channel: 'C02RRTC2E9M',
+    event_ts: '1640763496.000400',
+    channel_type: 'channel'
+  },
+  type: 'event_callback',
+  event_id: 'Ev02S6GZQE5R',
+  event_time: 1640763496,
+  authorizations: [
+    {
+      enterprise_id: null,
+      team_id: 'T01JJ7B6URX',
+      user_id: 'U02S6FTD7JP',
+      is_bot: true,
+      is_enterprise_install: false
+    }
+  ],
+  is_ext_shared_channel: false,
+  event_context: '4-eyJldCI6Im1lc3NhZ2UiLCJ0aWQiOiJUMDFKSjdCNlVSWCIsImFpZCI6IkEwMlMzQjNLU0pIIiwiY2lkIjoiQzAyUlJUQzJFOU0ifQ'
+}

@@ -1,0 +1,27 @@
+{
+  "name": "serverless-stack-slack-support",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test": "sst test",
+    "start": "sst start",
+    "build": "sst build",
+    "deploy": "sst deploy",
+    "remove": "sst remove"
+  },
+  "eslintConfig": {
+    "extends": [
+      "serverless-stack"
+    ]
+  },
+  "devDependencies": {
+    "@aws-cdk/assert": "1.132.0",
+    "aws-sdk": "^2.1048.0"
+  },
+  "dependencies": {
+    "@aws-cdk/core": "1.132.0",
+    "@serverless-stack/cli": "0.55.0",
+    "@serverless-stack/resources": "0.55.0",
+    "axios": "^0.24.0"
+  }
+}

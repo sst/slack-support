@@ -1,0 +1,31 @@
+{
+  token: 'xQYIHKqvseVjxOTCBsfDzHlC',
+  team_id: 'T01JJ7B6URX',
+  api_app_id: 'A02S3B3KSJH',
+  event: {
+    type: 'reaction_removed',
+    user: 'U01JVDKASAC',
+    item: {
+      type: 'message',
+      channel: 'C02RRTC2E9M',
+      ts: '1640763518.000600'
+    },
+    reaction: 'white_check_mark',
+    item_user: 'U01JVDKASAC',
+    event_ts: '1640763894.000800'
+  },
+  type: 'event_callback',
+  event_id: 'Ev02S6G9NLCA',
+  event_time: 1640763894,
+  authorizations: [
+    {
+      enterprise_id: null,
+      team_id: 'T01JJ7B6URX',
+      user_id: 'U02S6FTD7JP',
+      is_bot: true,
+      is_enterprise_install: false
+    }
+  ],
+  is_ext_shared_channel: false,
+  event_context: '4-eyJldCI6InJlYWN0aW9uX3JlbW92ZWQiLCJ0aWQiOiJUMDFKSjdCNlVSWCIsImFpZCI6IkEwMlMzQjNLU0pIIiwiY2lkIjoiQzAyUlJUQzJFOU0ifQ'
+}
