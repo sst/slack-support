@@ -1,4 +1,4 @@
-# SST Support Slack Bot [![Seed Status](https://api.seed.run/anomaly/serverless-stack-slack-support/stages/prod/build_badge)](https://console.seed.run/anomaly/serverless-stack-slack-support)
+# SST Support Slack Bot [![Seed Status](https://api.seed.run/anomaly/sst-slack-support/stages/prod/build_badge)](https://console.seed.run/anomaly/sst-slack-support)
 
 A serverless app created with [SST](https://github.com/serverless-stack/serverless-stack) that helps the SST team make sure all questions in the Slack channel are answered.
 
