@@ -1,44 +1,45 @@
 # SST Support Slack Bot [![Seed Status](https://api.seed.run/anomaly/serverless-stack-slack-support/stages/prod/build_badge)](https://console.seed.run/anomaly/serverless-stack-slack-support)
 
-This project was bootstrapped with [Create Serverless Stack](https://docs.serverless-stack.com/packages/create-serverless-stack).
+A serverless app created with [SST](https://github.com/serverless-stack/serverless-stack) that helps the SST team make sure all questions in the Slack channel are answered.
+
+## Getting Started
+
+[Create a Slack app](https://api.slack.com/apps), and read this guide on how to enable Event Subscriptions webhook — [Slack Event Subscriptions](https://api.slack.com/apis/connections/events-api#the-events-api__subscribing-to-event-types).
+
+## Running Locally
+
+Create a `.env.local` file and add the Slack Bot OAuth token.
+
+```
+SLACK_BOT_OAUTH_TOKEN=xoxb-1111111111111-2222222222222-zI2HCwkNaoXaNnd1JKlzcBl9
+```
 
 Start by installing the dependencies.
 
-```bash
-$ yarn install
+``` bash
+$ npm install
 ```
 
-## Commands
+Then start the Live Lambda Development environment.
 
-### `yarn run start`
+``` bash
+$ npx sst start
+```
 
-Starts the local Lambda development environment.
+The templates to generate the share images are stored in [`templates/`](https://github.com/serverless-stack/social-cards/tree/main/templates). And all the non-Latin fonts are placed in [`.fonts/`](https://github.com/serverless-stack/social-cards/tree/main/.fonts).
 
-### `yarn run build`
+## Deploying to Prod
 
-Build your app and synthesize your stacks.
+Deploy your service to prod by running.
 
-Generates a `.build/` directory with the compiled files and a `.build/cdk.out/` directory with the synthesized CloudFormation stacks.
-
-### `yarn run deploy [stack]`
-
-Deploy all your stacks to AWS. Or optionally deploy, a specific stack.
-
-### `yarn run remove [stack]`
-
-Remove all your stacks and all of their resources from AWS. Or optionally removes, a specific stack.
-
-### `yarn run test`
-
-Runs your tests using Jest. Takes all the [Jest CLI options](https://jestjs.io/docs/en/cli).
+``` bash
+$ npx sst deploy --stage prod
+```
 
 ## Documentation
 
-Learn more about the Serverless Stack.
-- [Docs](https://docs.serverless-stack.com)
+Learn more about the SST.
+
+- [Docs](https://docs.serverless-stack.com/)
 - [@serverless-stack/cli](https://docs.serverless-stack.com/packages/cli)
 - [@serverless-stack/resources](https://docs.serverless-stack.com/packages/resources)
-
-## Community
-
-[Follow us on Twitter](https://twitter.com/ServerlessStack) or [post on our forums](https://discourse.serverless-stack.com).
