@@ -1,4 +1,4 @@
-# Getting Started with Serverless Stack (SST)
+# SST Support Slack Bot [![Seed Status](https://api.seed.run/anomaly/serverless-stack-slack-support/stages/prod/build_badge)](https://console.seed.run/anomaly/serverless-stack-slack-support)
 
 This project was bootstrapped with [Create Serverless Stack](https://docs.serverless-stack.com/packages/create-serverless-stack).
 
