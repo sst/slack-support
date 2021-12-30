@@ -38,13 +38,8 @@ export async function subscription(event) {
 }
 
 export async function interactive(event) {
-  console.log("event", event);
   const buf = Buffer.from(event.body, 'base64').toString();
-  console.log("buf", buf);
-  console.log("decoded", decodeURIComponent(buf));
-  console.log("parsed", decodeURIComponent(buf).substring(8));
   const payload = JSON.parse(decodeURIComponent(buf).substring(8));
-  console.log("payload", payload);
 
   if (payload.actions[0].value === "refresh") {
     await updateAppHome({
@@ -58,8 +53,8 @@ async function handleEvent(body) {
   if (!validateApp(body.api_app_id)) { return; }
 
   // App Home opened
-  if (body.event.type === "app_home_opened") {
-    if (!validateAgent(body.event.user)) { return; }
+  if (body.event.type === "app_home_opened"
+    && validateAgent(body.event.user)) {
     await updateAppHome({
       userId: body.event.user,
     });
@@ -67,9 +62,10 @@ async function handleEvent(body) {
   // Reaction added
   else if (body.event.type === "reaction_added"
     && body.event.item.type === "message"
-    && ["white_check_mark", "heavy_check_mark"].includes(body.event.reaction)) {
-    if (!validateChannel(body.event.item.channel)) { return; }
-    if (!validateAgent(body.event.user)) { return; }
+    && ["white_check_mark", "heavy_check_mark"].includes(body.event.reaction)
+    && validateChannel(body.event.item.channel)
+    && validateAgent(body.event.user)
+    && validateMessageSubtype(body.event.subtype)) {
     await closeIssue({
       channelId: body.event.item.channel,
       threadId: body.event.item.ts,
@@ -83,9 +79,10 @@ async function handleEvent(body) {
   // Reaction removed
   else if (body.event.type === "reaction_removed"
     && body.event.item.type === "message"
-    && ["white_check_mark", "heavy_check_mark"].includes(body.event.reaction)) {
-    if (!validateChannel(body.event.item.channel)) { return; }
-    if (!validateAgent(body.event.user)) { return; }
+    && ["white_check_mark", "heavy_check_mark"].includes(body.event.reaction)
+    && validateChannel(body.event.item.channel)
+    && validateAgent(body.event.user)
+  ) {
     await reopenIssue({
       channelId: body.event.item.channel,
       threadId: body.event.item.ts,
