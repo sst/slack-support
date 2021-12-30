@@ -38,8 +38,11 @@ export async function subscription(event) {
 }
 
 export async function interactive(event) {
+  console.log("event", event);
   const buf = Buffer.from(event.body, 'base64').toString();
+  console.log("buf", buf);
   const payload = JSON.parse(qs.parse(decodeURIComponent(buf)).payload);
+  console.log("payload", payload);
 
   if (payload.actions[0].value === "refresh") {
     await updateAppHome({
