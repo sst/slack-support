@@ -41,6 +41,8 @@ export async function interactive(event) {
   console.log("event", event);
   const buf = Buffer.from(event.body, 'base64').toString();
   console.log("buf", buf);
+  console.log("decoded", decodeURIComponent(buf));
+  console.log("parsed", qs.parse(decodeURIComponent(buf)));
   const payload = JSON.parse(qs.parse(decodeURIComponent(buf)).payload);
   console.log("payload", payload);
 
