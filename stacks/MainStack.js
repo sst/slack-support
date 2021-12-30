@@ -28,6 +28,7 @@ export default class MainStack extends sst.Stack {
       },
       routes: {
         "POST /subscription": "src/lambda.subscription",
+        "POST /interactive": "src/lambda.interactive",
       },
     });
 

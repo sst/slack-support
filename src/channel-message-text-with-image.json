@@ -1,0 +1,34 @@
+{
+  token: 'wOiZ3ci2rn417UDtD6uVhBqN',
+  team_id: 'T0HJ2SVJ4',
+  api_app_id: 'A02RUTE68KZ',
+  event: {
+    type: 'message',
+    text: 'with image',
+    files: [ [Object] ],
+    upload: false,
+    user: 'U0HJ0QE21',
+    display_as_bot: false,
+    ts: '1640854877.003500',
+    blocks: [ [Object] ],
+    client_msg_id: 'b88e942a-a7f9-431d-9777-90797ab6b268',
+    channel: 'CBK3NMV98',
+    subtype: 'file_share',
+    event_ts: '1640854877.003500',
+    channel_type: 'channel'
+  },
+  type: 'event_callback',
+  event_id: 'Ev02S31YFY22',
+  event_time: 1640854877,
+  authorizations: [
+    {
+      enterprise_id: null,
+      team_id: 'T0HJ2SVJ4',
+      user_id: 'U02RUTEFGBZ',
+      is_bot: true,
+      is_enterprise_install: false
+    }
+  ],
+  is_ext_shared_channel: false,
+  event_context: '4-eyJldCI6Im1lc3NhZ2UiLCJ0aWQiOiJUMEhKMlNWSjQiLCJhaWQiOiJBMDJSVVRFNjhLWiIsImNpZCI6IkNCSzNOTVY5OCJ9'
+}

@@ -37,15 +37,26 @@ export async function subscription(event) {
   };
 }
 
-export async function handleEvent(body) {
+export async function interactive(event) {
+  const buf = Buffer.from(event.body, 'base64').toString();
+  const payload = JSON.parse(qs.parse(decodeURIComponent(buf)).payload);
+
+  if (payload.actions[0].value === "refresh") {
+    await updateAppHome({
+      userId: payload.user.id,
+    });
+  }
+}
+
+async function handleEvent(body) {
   if (!validateTeam(body.team_id)) { return; }
   if (!validateApp(body.api_app_id)) { return; }
 
-  // Reaction added
+  // App Home opened
   if (body.event.type === "app_home_opened") {
     if (!validateAgent(body.event.user)) { return; }
-    await displayHome({
-      userId: body.event.user
+    await updateAppHome({
+      userId: body.event.user,
     });
   }
   // Reaction added
@@ -60,6 +71,9 @@ export async function handleEvent(body) {
       agentId: body.event.user,
       closedAt: body.event_time,
     });
+    await updateAppHome({
+      userId: body.event.user,
+    });
   }
   // Reaction removed
   else if (body.event.type === "reaction_removed"
@@ -71,13 +85,16 @@ export async function handleEvent(body) {
       channelId: body.event.item.channel,
       threadId: body.event.item.ts,
     });
+    await updateAppHome({
+      userId: body.event.user,
+    });
   }
   // New message => new issue
   else if (body.event.type === "message"
     && body.event.channel_type === "channel"
-    && body.event.subtype === undefined
-    && body.event.thread_ts === undefined) {
-    if (!validateChannel(body.event.channel)) { return; }
+    && body.event.thread_ts === undefined
+    && validateChannel(body.event.channel)
+    && validateMessageSubtype(body.event.subtype)) {
     await createIssue({
       channelId: body.event.channel,
       threadId: body.event.ts,
@@ -89,10 +106,9 @@ export async function handleEvent(body) {
   // New message
   else if (body.event.type === "message"
     && body.event.channel_type === "channel"
-    && body.event.subtype === undefined
-    && body.event.thread_ts !== undefined) {
-    if (!validateChannel(body.event.channel)) { return; }
-
+    && body.event.thread_ts !== undefined
+    && validateChannel(body.event.channel)
+    && validateMessageSubtype(body.event.subtype)) {
     await repliedToIssue({
       channelId: body.event.channel,
       threadId: body.event.thread_ts,
@@ -108,6 +124,10 @@ export async function handleEvent(body) {
         threadId: body.event.thread_ts,
       });
     }
+
+    await updateAppHome({
+      userId: body.event.user,
+    });
   }
 }
 
@@ -129,6 +149,10 @@ function validateAgent(userId) {
 
 function validateNotAgent(userId) {
   return !AGENT_USER_IDS.includes(userId);
+}
+
+function validateMessageSubtype(subtype) {
+  return subtype === undefined || subtype === "file_share";
 }
 
 function buildPk(channelId, threadId) {
@@ -221,7 +245,7 @@ async function listOpenIssues() {
   return ret.Items;
 }
 
-async function displayHome({ userId }) {
+async function updateAppHome({ userId }) {
   const issues = await listOpenIssues();
   const args = {
     token: process.env.SLACK_BOT_OAUTH_TOKEN,
@@ -236,6 +260,24 @@ async function displayHome({ userId }) {
   }
 }
 
+async function renderHeader(text) {
+  return {
+    type: "header",
+    text: {
+      type: "plain_text",
+      text,
+    }
+  };
+}
+
+async function renderDivider() {
+  return [
+    { type: "section", text: { type: "plain_text", text: "\n" } },
+    { type: "divider" },
+    { type: "section", text: { type: "plain_text", text: "\n" } },
+  ];
+}
+
 async function updateView(issues) {
   const blocks = [
     {
@@ -245,13 +287,7 @@ async function updateView(issues) {
         text: "This tool helps the SST team make sure all questions, bug reports, and feature requests are responded and resolved.",
       }
     },
-    {
-      type: "header",
-      text: {
-        type: "plain_text",
-        text: "How it works",
-      }
-    },
+    await renderHeader("How it works"),
     {
       type: "section",
       text: {
@@ -263,12 +299,19 @@ async function updateView(issues) {
 `,
       }
     },
+    await renderHeader("Unresolved issues"),
     {
-      type: "header",
-      text: {
-        type: "plain_text",
-        text: "Unresolved issues",
-      }
+      type: "actions",
+      elements: [
+        {
+          type: "button",
+          text: {
+            type: "plain_text",
+            text: "Refresh",
+          },
+          value: "refresh",
+        },
+      ],
     },
   ];
   issues.forEach(({ userId, text, channelId, threadId, lastMessageId, lastMessageUserId }, i) => {
