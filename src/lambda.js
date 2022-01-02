@@ -1,13 +1,13 @@
-import AWS from "aws-sdk";
-if (process.env.IS_LOCAL) {
-  AWS.config.logger = console;
-}
+import {
+  createIssue,
+  removeIssue,
+  closeIssue,
+  reopenIssue,
+  repliedToIssue,
+  listOpenIssues,
+} from "./db";
+import { publishView } from "./slack";
 
-import qs from "qs";
-import axios from "axios";
-const ddb = new AWS.DynamoDB.DocumentClient();
-
-const API_URL = "https://slack.com/api";
 const TEAM_ID = "T01JJ7B6URX"; // SST Slack workspace
 const APP_ID = "A02S3B3KSJH"; // SST Support Slack app
 const CHANNEL_IDS = [
@@ -22,10 +22,10 @@ const AGENT_USER_IDS = [
   "U01J5Q8HV5Z",  // Jay
   "U02H0KUJFH7",  // Manitej
 ];
-const STATUS = {
-  OPEN: "open",
-  CLOSED: "closed",
-};
+
+///////////////////////
+// Endpoint Handlers //
+///////////////////////
 
 export async function subscription(event) {
   const body = JSON.parse(event.body);
@@ -65,7 +65,7 @@ async function handleEvent(body) {
     && ["white_check_mark", "heavy_check_mark"].includes(body.event.reaction)
     && validateChannel(body.event.item.channel)
     && validateAgent(body.event.user)
-    && validateMessageSubtype(body.event.subtype)) {
+    && validateMessageSubtypeAdded(body.event.subtype)) {
     await closeIssue({
       channelId: body.event.item.channel,
       threadId: body.event.item.ts,
@@ -91,12 +91,12 @@ async function handleEvent(body) {
       userId: body.event.user,
     });
   }
-  // New message => new issue
+  // New thread => new issue
   else if (body.event.type === "message"
     && body.event.channel_type === "channel"
     && body.event.thread_ts === undefined
     && validateChannel(body.event.channel)
-    && validateMessageSubtype(body.event.subtype)) {
+    && validateMessageSubtypeAdded(body.event.subtype)) {
     await createIssue({
       channelId: body.event.channel,
       threadId: body.event.ts,
@@ -105,12 +105,12 @@ async function handleEvent(body) {
       createdAt: body.event_time,
     });
   }
-  // New message
+  // New thread reply
   else if (body.event.type === "message"
     && body.event.channel_type === "channel"
     && body.event.thread_ts !== undefined
     && validateChannel(body.event.channel)
-    && validateMessageSubtype(body.event.subtype)) {
+    && validateMessageSubtypeAdded(body.event.subtype)) {
     await repliedToIssue({
       channelId: body.event.channel,
       threadId: body.event.thread_ts,
@@ -131,6 +131,22 @@ async function handleEvent(body) {
       userId: body.event.user,
     });
   }
+  // Removed thread
+  else if (body.event.type === "message"
+    && body.event.channel_type === "channel"
+    && body.event.previous_message.thread_ts === undefined
+    && validateChannel(body.event.channel)
+    && validateMessageSubtypeDeleted(body.event.subtype)) {
+    await removeIssue({
+      channelId: body.event.channel,
+      threadId: body.event.deleted_ts,
+    });
+  }
+}
+
+async function updateAppHome({ userId }) {
+  const issues = await listOpenIssues();
+  await publishView({ userId, issues });
 }
 
 function validateTeam(teamId) {
@@ -153,213 +169,10 @@ function validateNotAgent(userId) {
   return !AGENT_USER_IDS.includes(userId);
 }
 
-function validateMessageSubtype(subtype) {
+function validateMessageSubtypeAdded(subtype) {
   return subtype === undefined || subtype === "file_share";
 }
 
-function buildPk(channelId, threadId) {
-  return `${channelId}:${threadId}`;
-}
-
-async function createIssue({ channelId, threadId, userId, text, createdAt }) {
-  await ddb.put({
-    TableName: process.env.TABLE_NAME,
-    Item: {
-      pk: buildPk(channelId, threadId),
-      channelId,
-      threadId,
-      userId,
-      text,
-      status: STATUS.OPEN,
-      createdAt,
-      lastMessageId: threadId,
-      lastMessageAt: createdAt,
-      lastMessageUserId: userId,
-    },
-  }).promise();
-}
-
-async function closeIssue({ channelId, threadId, agentId, closedAt }) {
-  await ddb.update({
-    TableName: process.env.TABLE_NAME,
-    Key: {
-      pk: buildPk(channelId, threadId),
-    },
-    ConditionExpression: 'attribute_exists(pk)',
-    UpdateExpression: "SET agentId = :agentId, closedAt = :closedAt, #status = :status",
-    ExpressionAttributeNames: {
-      "#status": "status",
-    },
-    ExpressionAttributeValues: {
-      ":agentId": agentId,
-      ":closedAt": closedAt,
-      ":status": STATUS.CLOSED,
-    }
-  }).promise();
-}
-
-async function reopenIssue({ channelId, threadId }) {
-  await ddb.update({
-    TableName: process.env.TABLE_NAME,
-    Key: {
-      pk: buildPk(channelId, threadId),
-    },
-    ConditionExpression: 'attribute_exists(pk)',
-    UpdateExpression: "SET #status = :status REMOVE agentId, closedAt",
-    ExpressionAttributeNames: {
-      "#status": "status",
-    },
-    ExpressionAttributeValues: {
-      ":status": STATUS.OPEN,
-    }
-  }).promise();
-}
-
-async function repliedToIssue({ channelId, threadId, lastMessageId, lastMessageUserId, lastMessageAt }) {
-  await ddb.update({
-    TableName: process.env.TABLE_NAME,
-    Key: {
-      pk: buildPk(channelId, threadId),
-    },
-    ConditionExpression: 'attribute_exists(pk)',
-    UpdateExpression: "SET lastMessageId = :lastMessageId, lastMessageAt = :lastMessageAt, lastMessageUserId = :lastMessageUserId",
-    ExpressionAttributeValues: {
-      ":lastMessageId": lastMessageId,
-      ":lastMessageAt": lastMessageAt,
-      ":lastMessageUserId": lastMessageUserId,
-    }
-  }).promise();
-}
-
-async function listOpenIssues() {
-  const ret = await ddb.query({
-    TableName: process.env.TABLE_NAME,
-    IndexName: "statusLastMessageAtIndex",
-    KeyConditionExpression: "#status = :status",
-    ExpressionAttributeNames: {
-      "#status": "status",
-    },
-    ExpressionAttributeValues: {
-      ":status": STATUS.OPEN,
-    }
-  }).promise();
-
-  return ret.Items;
-}
-
-async function updateAppHome({ userId }) {
-  const issues = await listOpenIssues();
-  const args = {
-    token: process.env.SLACK_BOT_OAUTH_TOKEN,
-    user_id: userId,
-    view: await updateView(issues)
-  };
-  try {
-    const result = await axios.post(`${API_URL}/views.publish`, qs.stringify(args));
-    console.log(result.data);
-  } catch(e) {
-    console.log(e);
-  }
-}
-
-async function renderHeader(text) {
-  return {
-    type: "header",
-    text: {
-      type: "plain_text",
-      text,
-    }
-  };
-}
-
-async function renderDivider() {
-  return [
-    { type: "section", text: { type: "plain_text", text: "\n" } },
-    { type: "divider" },
-    { type: "section", text: { type: "plain_text", text: "\n" } },
-  ];
-}
-
-async function updateView(issues) {
-  const blocks = [
-    {
-      type: "section",
-      text: {
-        type: "mrkdwn",
-        text: "This tool helps the SST team make sure all questions, bug reports, and feature requests are responded and resolved.",
-      }
-    },
-    await renderHeader("How it works"),
-    {
-      type: "section",
-      text: {
-        type: "mrkdwn",
-        text: `
-- An issue is \`created\` for new messages in #help, #sst, and #seed
-- An issue is \`closed\` after a team member marks the thread :white_check_mark: or :heavy_check_mark:
-- An issue is \`re-opened\` after a non-team member replies in the thread
-`,
-      }
-    },
-    await renderHeader("Unresolved issues"),
-    {
-      type: "actions",
-      elements: [
-        {
-          type: "button",
-          text: {
-            type: "plain_text",
-            text: "Refresh",
-          },
-          value: "refresh",
-        },
-      ],
-    },
-  ];
-  issues.forEach(({ userId, text, channelId, threadId, lastMessageId, lastMessageUserId }, i) => {
-    const link = lastMessageId === threadId
-      ? `https://serverless-stack.slack.com/archives/${channelId}/p${threadId.split(".").join("")}`
-      : `https://serverless-stack.slack.com/archives/${channelId}/p${lastMessageId.split(".").join("")}?thread_ts=${threadId}&cid=${channelId}`;
-    blocks.push({
-      type: "section",
-      text: {
-        type: "plain_text",
-        text: "\n",
-      }
-    });
-    blocks.push({
-      type: "section",
-      text: {
-        type: "mrkdwn",
-        text: `\n<@${userId}> asked in <#${channelId}>: \`${text.replace("\n", " ").substring(0, 70)}\``,
-      }
-    });
-    blocks.push({
-      type: "context",
-      elements: [
-        { type: "mrkdwn", text: `<${link}|View Thread> - Last replied by <@${lastMessageUserId}>` },
-      ],
-    });
-    blocks.push({
-      type: "section",
-      text: {
-        type: "plain_text",
-        text: "\n",
-      }
-    });
-    if (i < issues.length - 1) {
-      blocks.push({ type: "divider" });
-    }
-  });
-
-  const view = {
-    type: 'home',
-    title: {
-      type: 'plain_text',
-      text: 'Keep note!'
-    },
-    blocks: blocks
-  }
-
-  return JSON.stringify(view);
+function validateMessageSubtypeDeleted(subtype) {
+  return subtype === "message_deleted";
 }
