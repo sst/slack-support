@@ -36,7 +36,7 @@ export async function openModalView({ triggerId, channelId, threadId, messageId,
 async function renderModalView({ channelId, threadId, messageId, message }) {
   const link = buildSlackLink({ channelId, threadId, messageId });
   const quotedMessage = message.split("\n").map(line => `> ${line}`).join("\n");
-  const body = encodeURIComponent(`\n\n${quotedMessage}\n\n---\nRequest: ${link}`);
+  const body = encodeURI(`\n\n${quotedMessage}\n\n---\nRequest: ${link}`);
   return JSON.stringify({
     type: "modal",
     callback_id: "modal-create-github-issue",
