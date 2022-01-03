@@ -1,0 +1,28 @@
+{
+  type: 'message_action',
+  token: 'wOiZ3ci2rn417UDtD6uVhBqN',
+  action_ts: '1641190558.229053',
+  team: { id: 'T0HJ2SVJ4', domain: 'anomaly-innovations' },
+  user: {
+    id: 'U0HJ0QE21',
+    username: 'fwang',
+    team_id: 'T0HJ2SVJ4',
+    name: 'fwang'
+  },
+  channel: { id: 'CBK3NMV98', name: 'engineering' },
+  is_enterprise_install: false,
+  enterprise: null,
+  callback_id: 'create_github_issue',
+  trigger_id: '2902265418324.17614913616.5470a1cfd00559629dcf2074d2a284e2',
+  response_url: 'https://hooks.slack.com/app/T0HJ2SVJ4/2923703710752/ymPlqlkVrJK66vV2LTeQGTG3',
+  message_ts: '1641113113.001400',
+  message: {
+    client_msg_id: '48012cbb-004e-4649-bd31-703813ddfb7d',
+    type: 'message',
+    text: 'hello',
+    user: 'U0HJ0QE21',
+    ts: '1641113113.001400',
+    team: 'T0HJ2SVJ4',
+    blocks: [ [Object] ]
+  }
+}

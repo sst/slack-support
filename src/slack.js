@@ -1,23 +1,65 @@
 import qs from "qs";
 import axios from "axios";
 
-const ApiURL = "https://slack.com/api";
+const SlackURL = `https://${process.env.SLACK_TEAM_NAME}.slack.com`;
+const SlackApiURL = "https://slack.com/api";
+const GitHubURL = `https://github.com/${process.env.GITHUB_REPO}`;
 
-export async function publishView({ userId, issues }) {
+export async function publishHomeView({ userId, issues }) {
   const args = {
     token: process.env.SLACK_BOT_OAUTH_TOKEN,
     user_id: userId,
-    view: await renderView(issues)
+    view: await renderHomeView(issues)
   };
   try {
-    const result = await axios.post(`${ApiURL}/views.publish`, qs.stringify(args));
+    const result = await axios.post(`${SlackApiURL}/views.publish`, qs.stringify(args));
     console.log(result.data);
   } catch(e) {
     console.log(e);
   }
 }
 
-async function renderView(issues) {
+export async function openModalView({ triggerId, channelId, threadId, messageId, message }) {
+  const args = {
+    token: process.env.SLACK_BOT_OAUTH_TOKEN,
+    trigger_id: triggerId,
+    view: await renderModalView({ channelId, threadId, messageId, message })
+  };
+  try {
+    const result = await axios.post(`${SlackApiURL}/views.open`, qs.stringify(args));
+    console.log(result.data);
+  } catch(e) {
+    console.log(e);
+  }
+}
+
+async function renderModalView({ channelId, threadId, messageId, message }) {
+  const link = buildSlackLink({ channelId, threadId, messageId });
+  const quotedMessage = message.split("\n").map(line => `> ${line}`).join("\n");
+  const body = encodeURIComponent(`\n\n${quotedMessage}\n\n---\nRequest: ${link}`);
+  return JSON.stringify({
+    type: "modal",
+    callback_id: "modal-create-github-issue",
+    title: {
+      type: 'plain_text',
+      text: 'Create a GitHub Issue'
+    },
+    blocks: [{
+      type: "actions",
+      elements: [{
+        type: "button",
+        text: {
+          type: "plain_text",
+          text: "Open in GitHub",
+        },
+        url: `${GitHubURL}/issues/new?body=${body}`,
+        action_id: "button-create-github-issue",
+      }],
+    }],
+  });
+}
+
+async function renderHomeView(issues) {
   const blocks = [
     {
       type: "section",
@@ -54,9 +96,11 @@ async function renderView(issues) {
     },
   ];
   issues.forEach(({ userId, text, channelId, threadId, lastMessageId, lastMessageUserId }, i) => {
-    const link = lastMessageId === threadId
-      ? `https://serverless-stack.slack.com/archives/${channelId}/p${threadId.split(".").join("")}`
-      : `https://serverless-stack.slack.com/archives/${channelId}/p${lastMessageId.split(".").join("")}?thread_ts=${threadId}&cid=${channelId}`;
+    const link = buildSlackLink({
+      channelId,
+      threadId,
+      messageId: lastMessageUserId,
+    });
     blocks.push({
       type: "section",
       text: {
@@ -117,4 +161,10 @@ async function renderDivider() {
     { type: "divider" },
     { type: "section", text: { type: "plain_text", text: "\n" } },
   ];
+}
+
+function buildSlackLink({ channelId, threadId, messageId }) {
+  return messageId === threadId
+    ? `${SlackURL}/archives/${channelId}/p${threadId.split(".").join("")}`
+    : `${SlackURL}/archives/${channelId}/p${messageId.split(".").join("")}?thread_ts=${threadId}&cid=${channelId}`;
 }

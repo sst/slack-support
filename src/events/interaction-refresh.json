@@ -1,0 +1,47 @@
+{
+  type: 'block_actions',
+  user: {
+    id: 'U0HJ0QE21',
+    username: 'fwang',
+    name: 'fwang',
+    team_id: 'T0HJ2SVJ4'
+  },
+  api_app_id: 'A02RUTE68KZ',
+  token: 'wOiZ3ci2rn417UDtD6uVhBqN',
+  container: { type: 'view', view_id: 'V02RV3SBDLP' },
+  trigger_id: '2899994524659.17614913616.6a40e1043134062d4dd4b548dc6c8a9b',
+  team: { id: 'T0HJ2SVJ4', domain: 'anomaly-innovations' },
+  enterprise: null,
+  is_enterprise_install: false,
+  view: {
+    id: 'V02RV3SBDLP',
+    team_id: 'T0HJ2SVJ4',
+    type: 'home',
+    blocks: [ [Object], [Object], [Object], [Object], [Object] ],
+    private_metadata: '',
+    callback_id: '',
+    state: { values: {} },
+    hash: '1641190052.3Lj4C5da',
+    title: { type: 'plain_text', text: 'View+Title', emoji: true },
+    clear_on_close: false,
+    notify_on_close: false,
+    close: null,
+    submit: null,
+    previous_view_id: null,
+    root_view_id: 'V02RV3SBDLP',
+    app_id: 'A02RUTE68KZ',
+    external_id: '',
+    app_installed_team_id: 'T0HJ2SVJ4',
+    bot_id: 'B02S6J8EVL5'
+  },
+  actions: [
+    {
+      action_id: 'uwWAJ',
+      block_id: 'Pdp',
+      text: [Object],
+      value: 'refresh',
+      type: 'button',
+      action_ts: '1641190153.012280'
+    }
+  ]
+}

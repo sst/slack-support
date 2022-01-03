@@ -6,22 +6,15 @@ import {
   repliedToIssue,
   listOpenIssues,
 } from "./db";
-import { publishView } from "./slack";
+import {
+  openModalView,
+  publishHomeView,
+} from "./slack";
 
-const TEAM_ID = "T01JJ7B6URX"; // SST Slack workspace
-const APP_ID = "A02S3B3KSJH"; // SST Support Slack app
-const CHANNEL_IDS = [
-  "C01JG3B20RY",  // #help
-  "C01UJ8MDHEH",  // #seed
-  "C01HQQVC8TH",  // #sst
-  "C02RRTC2E9M",  // #support-test
-];
-const AGENT_USER_IDS = [
-  "U01MV4U2EV9",  // Dax
-  "U01JVDKASAC",  // Frank
-  "U01J5Q8HV5Z",  // Jay
-  "U02H0KUJFH7",  // Manitej
-];
+const TEAM_ID = process.env.SLACK_TEAM_ID;
+const APP_ID = process.env.SLACK_APP_ID;
+const CHANNEL_IDS = process.env.SLACK_CHANNEL_IDS.split(",");
+const AGENT_USER_IDS = process.env.SLACK_AGENT_USER_IDS.split(",");
 
 ///////////////////////
 // Endpoint Handlers //
@@ -41,11 +34,24 @@ export async function interactive(event) {
   const buf = Buffer.from(event.body, 'base64').toString();
   const payload = JSON.parse(decodeURIComponent(buf).substring(8));
 
-  if (payload.actions[0].value === "refresh") {
+  console.log(JSON.stringify(payload, null, 4));
+
+  if (payload.type === "block_actions" && payload.actions[0].value === "refresh") {
     await updateAppHome({
       userId: payload.user.id,
     });
   }
+  else if (payload.type === "message_action" && payload.callback_id === "create_github_issue") {
+    await openModalView({
+      channelId: payload.channel.id,
+      threadId: payload.message.thread_ts || payload.message.ts,
+      messageId: payload.message.ts,
+      message: payload.message.text,
+      triggerId: payload.trigger_id,
+    });
+  }
+
+  return { };
 }
 
 async function handleEvent(body) {
@@ -146,7 +152,7 @@ async function handleEvent(body) {
 
 async function updateAppHome({ userId }) {
   const issues = await listOpenIssues();
-  await publishView({ userId, issues });
+  await publishHomeView({ userId, issues });
 }
 
 function validateTeam(teamId) {
