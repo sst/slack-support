@@ -1,6 +1,8 @@
 import {
+  isIssueClosed,
   createIssue,
   removeIssue,
+  muteIssue,
   closeIssue,
   reopenIssue,
   repliedToIssue,
@@ -68,16 +70,27 @@ async function handleEvent(body) {
   // Reaction added
   else if (body.event.type === "reaction_added"
     && body.event.item.type === "message"
-    && ["white_check_mark", "heavy_check_mark"].includes(body.event.reaction)
     && validateChannel(body.event.item.channel)
     && validateAgent(body.event.user)
     && validateMessageSubtypeAdded(body.event.subtype)) {
-    await closeIssue({
-      channelId: body.event.item.channel,
-      threadId: body.event.item.ts,
-      agentId: body.event.user,
-      closedAt: body.event_time,
-    });
+
+    if (["white_check_mark", "heavy_check_mark"].includes(body.event.reaction)) {
+      await closeIssue({
+        channelId: body.event.item.channel,
+        threadId: body.event.item.ts,
+        agentId: body.event.user,
+        closedAt: body.event_time,
+      });
+    }
+    else if (body.event.reaction === "speech_balloon") {
+      await muteIssue({
+        channelId: body.event.item.channel,
+        threadId: body.event.item.ts,
+        agentId: body.event.user,
+        mutedAt: body.event_time,
+      });
+    }
+
     await updateAppHome({
       userId: body.event.user,
     });
@@ -85,14 +98,16 @@ async function handleEvent(body) {
   // Reaction removed
   else if (body.event.type === "reaction_removed"
     && body.event.item.type === "message"
-    && ["white_check_mark", "heavy_check_mark"].includes(body.event.reaction)
     && validateChannel(body.event.item.channel)
     && validateAgent(body.event.user)
   ) {
-    await reopenIssue({
-      channelId: body.event.item.channel,
-      threadId: body.event.item.ts,
-    });
+    if (["white_check_mark", "heavy_check_mark", "speech_balloon"].includes(body.event.reaction)) {
+      await reopenIssue({
+        channelId: body.event.item.channel,
+        threadId: body.event.item.ts,
+      });
+    }
+
     await updateAppHome({
       userId: body.event.user,
     });
@@ -127,10 +142,16 @@ async function handleEvent(body) {
 
     // If issue is closed => re-open issue
     if (validateNotAgent(body.event.user)) {
-      await reopenIssue({
+      const isClosed = await isIssueClosed({
         channelId: body.event.channel,
         threadId: body.event.thread_ts,
       });
+      if (isClosed) {
+        await reopenIssue({
+          channelId: body.event.channel,
+          threadId: body.event.thread_ts,
+        });
+      }
     }
 
     await updateAppHome({

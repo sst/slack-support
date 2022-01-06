@@ -4,6 +4,7 @@ import axios from "axios";
 const SlackURL = `https://${process.env.SLACK_TEAM_NAME}.slack.com`;
 const SlackApiURL = "https://slack.com/api";
 const GitHubURL = `https://github.com/${process.env.GITHUB_REPO}`;
+const WS = '⠀'; // Unicode whitespace so Slack does not trim this
 
 export async function publishHomeView({ userId, issues }) {
   const args = {
@@ -77,6 +78,7 @@ async function renderHomeView(issues) {
 - An issue is \`created\` for new messages in #help, #sst, and #seed
 - An issue is \`closed\` after a team member marks the thread :white_check_mark: or :heavy_check_mark:
 - An issue is \`re-opened\` after a non-team member replies in the thread
+- If it's not an issue, marks the thread :speech_balloon:
 `,
       }
     },
@@ -104,33 +106,12 @@ async function renderHomeView(issues) {
     blocks.push({
       type: "section",
       text: {
-        type: "plain_text",
-        text: "\n",
-      }
-    });
-    blocks.push({
-      type: "section",
-      text: {
         type: "mrkdwn",
-        text: `\n<@${userId}> asked in <#${channelId}>: \`${text.replace("\n", " ").substring(0, 70)}\``,
+        text: (i === 0 ? "" : `‾\n`)
+        + `<@${userId}> asked in <#${channelId}>: \`${text.replace("\n", " ").substring(0, 70)}\`\n`
+        + `<${link}|View Thread> - Last replied by <@${lastMessageUserId}>`
       }
     });
-    blocks.push({
-      type: "context",
-      elements: [
-        { type: "mrkdwn", text: `<${link}|View Thread> - Last replied by <@${lastMessageUserId}>` },
-      ],
-    });
-    blocks.push({
-      type: "section",
-      text: {
-        type: "plain_text",
-        text: "\n",
-      }
-    });
-    if (i < issues.length - 1) {
-      blocks.push({ type: "divider" });
-    }
   });
 
   const view = {

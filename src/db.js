@@ -9,7 +9,18 @@ const TableName = process.env.TABLE_NAME;
 const Status = {
   OPEN: "open",
   CLOSED: "closed",
+  MUTED: "muted",
 };
+
+export async function isIssueClosed({ channelId, threadId }) {
+  const ret = await ddb.get({
+    TableName,
+    Key: {
+      pk: buildPk(channelId, threadId),
+    },
+  }).promise();
+  return ret.Item.status === Status.CLOSED;
+}
 
 export async function createIssue({ channelId, threadId, userId, text, createdAt }) {
   await ddb.put({
@@ -57,6 +68,25 @@ export async function closeIssue({ channelId, threadId, agentId, closedAt }) {
   }).promise();
 }
 
+export async function muteIssue({ channelId, threadId, agentId, mutedAt }) {
+  await ddb.update({
+    TableName,
+    Key: {
+      pk: buildPk(channelId, threadId),
+    },
+    ConditionExpression: 'attribute_exists(pk)',
+    UpdateExpression: "SET agentId = :agentId, mutedAt = :mutedAt, #status = :status",
+    ExpressionAttributeNames: {
+      "#status": "status",
+    },
+    ExpressionAttributeValues: {
+      ":agentId": agentId,
+      ":mutedAt": mutedAt,
+      ":status": Status.MUTED,
+    }
+  }).promise();
+}
+
 export async function reopenIssue({ channelId, threadId }) {
   await ddb.update({
     TableName,
@@ -64,7 +94,7 @@ export async function reopenIssue({ channelId, threadId }) {
       pk: buildPk(channelId, threadId),
     },
     ConditionExpression: 'attribute_exists(pk)',
-    UpdateExpression: "SET #status = :status REMOVE agentId, closedAt",
+    UpdateExpression: "SET #status = :status REMOVE agentId, closedAt, mutedAt",
     ExpressionAttributeNames: {
       "#status": "status",
     },
@@ -95,6 +125,7 @@ export async function listOpenIssues() {
     TableName,
     IndexName: "statusLastMessageAtIndex",
     KeyConditionExpression: "#status = :status",
+    Limit: 80,
     ExpressionAttributeNames: {
       "#status": "status",
     },
