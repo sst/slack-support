@@ -82,7 +82,7 @@ async function renderHomeView(issues) {
 `,
       }
     },
-    await renderHeader("Unresolved issues"),
+    await renderHeader(`Unresolved issues (${issues.length})`),
     {
       type: "actions",
       elements: [
